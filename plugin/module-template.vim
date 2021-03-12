@@ -1,3 +1,1 @@
-lua << EOF
-require "module-template".init()
-EOF
+lua require("module-template").init()
