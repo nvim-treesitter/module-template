@@ -6,10 +6,9 @@ local M = {}
 function M.init()
   require "nvim-treesitter".define_modules {
     module_template = {
-      module_path = "module-template.internal",
+      module_path = "nvim-hidesig.internal",
       is_supported = function(lang)
-        -- TODO: you don't want your queries to be named `awesome-query`, do you ?
-        return queries.get_query(lang, 'awesome-query') ~= nil
+        return lang == 'ruby'
       end
     }
   }
