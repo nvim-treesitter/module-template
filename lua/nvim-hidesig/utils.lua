@@ -1,15 +1,9 @@
 -- source https://github.com/folke/tokyonight.nvim/blob/main/lua/tokyonight/util.lua
-local hsluv = require("nvim-hidesig.hsluv")
 local util = {}
 
--- for debugging purpose
-util.colorsUsed = {}
-
 util.bg = "#000000"
-util.fg = "#ffffff"
-util.day_brightness = 0.3
 
-local function hexToRgb(hex_str)
+function util.hexToRgb(hex_str)
   local hex = "[abcdef0-9][abcdef0-9]"
   local pat = "^#(" .. hex .. ")(" .. hex .. ")(" .. hex .. ")$"
   hex_str = string.lower(hex_str)
@@ -24,8 +18,8 @@ end
 ---@param bg string background color
 ---@param alpha number number between 0 and 1. 0 results in bg, 1 results in fg
 function util.blend(fg, bg, alpha)
-  bg = hexToRgb(bg)
-  fg = hexToRgb(fg)
+  bg = util.hexToRgb(bg)
+  fg = util.hexToRgb(fg)
 
   local blendChannel = function(i)
     local ret = (alpha * fg[i] + ((1 - alpha) * bg[i]))
@@ -37,63 +31,6 @@ end
 
 function util.darken(hex, amount, bg)
   return util.blend(hex, bg or util.bg, math.abs(amount))
-end
-
-function util.lighten(hex, amount, fg)
-  return util.blend(hex, fg or util.fg, math.abs(amount))
-end
-
-function util.brighten(color, percentage)
-  local hsl = hsluv.hex_to_hsluv(color)
-  local larpSpace = 100 - hsl[3]
-  if percentage < 0 then
-    larpSpace = hsl[3]
-  end
-  hsl[3] = hsl[3] + larpSpace * percentage
-  return hsluv.hsluv_to_hex(hsl)
-end
-
-function util.invertColor(color)
-  if color ~= "NONE" then
-    local hsl = hsluv.hex_to_hsluv(color)
-    hsl[3] = 100 - hsl[3]
-    if hsl[3] < 40 then
-      hsl[3] = hsl[3] + (100 - hsl[3]) * util.day_brightness
-    end
-    return hsluv.hsluv_to_hex(hsl)
-  end
-  return color
-end
-
-function util.highlight(group, color)
-  if color.fg then
-    util.colorsUsed[color.fg] = true
-  end
-  if color.bg then
-    util.colorsUsed[color.bg] = true
-  end
-  if color.sp then
-    util.colorsUsed[color.sp] = true
-  end
-
-  local style = color.style and "gui=" .. color.style or "gui=NONE"
-  local fg = color.fg and "guifg=" .. util.getColor(color.fg) or "guifg=NONE"
-  local bg = color.bg and "guibg=" .. util.getColor(color.bg) or "guibg=NONE"
-  local sp = color.sp and "guisp=" .. util.getColor(color.sp) or ""
-
-  local hl = "highlight " .. group .. " " .. style .. " " .. fg .. " " .. bg .. " " .. sp
-
-  if color.link then
-    vim.cmd("highlight! link " .. group .. " " .. color.link)
-  else
-    -- local data = {}
-    -- if color.fg then data.foreground = color.fg end
-    -- if color.bg then data.background = color.bg end
-    -- if color.sp then data.special = color.sp end
-    -- if color.style then data[color.style] = true end
-    -- vim.api.nvim_set_hl(ns, group, data)
-    vim.cmd(hl)
-  end
 end
 
 return util
