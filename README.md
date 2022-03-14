@@ -36,7 +36,7 @@ require("nvim-treesitter.configs").setup {
 
 ### After
 
-<img width="591" alt="Screen Shot 2022-03-14 at 10 09 31 AM" src="https://user-images.githubusercontent.com/10522258/158189650-70e4ea65-f6cf-4ca4-b831-efc9f95a5240.png">
+<img width="527" alt="Screen Shot 2022-03-14 at 10 28 21 AM" src="https://user-images.githubusercontent.com/10522258/158193121-775435c6-139b-4f90-b5b1-c2519a569017.png">
 
 # TODO
 - [ ] Dim sorbet sig on buffer changed
