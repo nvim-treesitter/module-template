@@ -12,8 +12,6 @@ function hidesig.traverseNode(bufnr, node)
   local color = highlight_utils.getHighlightGroupColor(highlightGroup)
   local darkenValue = hidesig.configs.opacity or 0.75
   local newHighlightGroup = string.format("%sDimmed", highlightGroup)
-  print("[traverse node] bufnr", bufnr)
-  print("[traverse node] node type", node:type())
 
   vim.api.nvim_set_hl(
     hidesig.ns,
@@ -35,10 +33,8 @@ function hidesig.traverseNode(bufnr, node)
   )
 
   if node:child_count() < 1 then
-    print("node has no children")
     return
   else
-    print("node has children")
     for childNode in node:iter_children() do
       hidesig.traverseNode(bufnr, childNode)
     end
@@ -49,7 +45,6 @@ end
 ---@param configs table configuration for hidesig
 -- @param configs.opacity float value from 0.0 to 1.0
 function hidesig.setup(configs)
-  print("[hidesig] setting up")
   hidesig.ns = vim.api.nvim_create_namespace("hidesig_ns")
   vim.api.nvim__set_hl_ns(hidesig.ns)
   hidesig.configs = configs or {}
@@ -82,16 +77,13 @@ function hidesig.perform(bufnr, lang)
   -- TODO: May need to clear highlight before adding running highlight. Otherwise commented code may retain the highlight
   -- reference https://github.dev/p00f/nvim-ts-rainbow/blob/master/lua/rainbow/internal.lua:51
   vim.api.nvim_buf_clear_namespace(bufnr, hidesig.ns, 0, -1)
-  local count = 0
+
   for _, captures in parsedQuery:iter_matches(bufferRoot, bufnr) do
     local sigBlock = captures[2] -- capture @sig_def
-    count = count + 1
-    print("[hidesig] sigBlock", sigBlock:type())
     for rootChildNode in sigBlock:iter_children() do
       hidesig.traverseNode(bufnr, rootChildNode)
     end
   end
-  print(count)
 end
 
 return hidesig

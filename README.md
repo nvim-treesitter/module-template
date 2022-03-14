@@ -1,8 +1,33 @@
 # Nvim Hide Sig
+
+[![Gitter](https://badges.gitter.im/nvim-treesitter/community.svg)](https://gitter.im/nvim-treesitter/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
 Dim Sorbet signature definitions so you can focus on the code.
 
-# TODO
- - [ ] Send nvim tree-sitter folks a message here : [![Gitter](https://badges.gitter.im/nvim-treesitter/community.svg)](https://gitter.im/nvim-treesitter/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+# Quick start
+
+- Install and set up [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter#quickstart) according to their documentation.
+- Install this plugin
+
+```lua
+  -- Packer
+  use "omnisyle/nvim-hidesig"
+
+```
+- Add a `hidesig` section in the [call to `require("nvim-treesitter.configs").setup()`](https://github.com/nvim-treesitter/nvim-treesitter#modules):
+
+```lua
+require("nvim-treesitter.configs").setup {
+  highlight = {
+      -- ...
+  },
+  -- ...
+  hidesig = {
+    enable = true,
+    opacity = 0.75, -- opacity for sig definitions
+  }
+}
+```
 
 # Credits
 

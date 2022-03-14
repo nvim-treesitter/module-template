@@ -8,7 +8,6 @@ function M.init()
       module_path = "hidesig.main",
       is_supported = function(lang)
         local isSupported = queries.get_query(lang, "sig_def") ~= nil
-        print("Language supported", isSupported)
         return isSupported
       end,
       opacity = 0.75
