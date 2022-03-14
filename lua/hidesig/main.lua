@@ -1,10 +1,11 @@
-local hidesig = require("nvim-hidesig.hidesig")
+local hidesig = require("hidesig.internal")
 local configs = require("nvim-treesitter.configs")
 
 local M = {}
 
 function M.attach(bufnr, lang)
   local config = configs.get_module("hidesig")
+  print("[hidesig] Attaching to bufnr", bufnr)
   hidesig.setup(config)
   hidesig.perform(bufnr, lang)
 end

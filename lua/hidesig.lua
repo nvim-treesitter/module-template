@@ -5,9 +5,11 @@ local M = {}
 function M.init()
   require "nvim-treesitter".define_modules {
     hidesig = {
-      module_path = "nvim-hidesig.internal",
+      module_path = "hidesig.main",
       is_supported = function(lang)
-        return queries.get_query(lang, "sig_def") ~= nil
+        local isSupported = queries.get_query(lang, "sig_def") ~= nil
+        print("Language supported", isSupported)
+        return isSupported
       end,
       opacity = 0.75
     }
