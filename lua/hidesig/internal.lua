@@ -2,16 +2,26 @@ local highlight_utils = require("hidesig.highlight_utils")
 local util = require("hidesig.util")
 
 local hidesig = {}
+local cachedHighlightGroup = {}
 
---- Traverse node to dim highlight color
----@param bufnr integer Buffer number
----@param node any Treesitter node
-function hidesig.traverseNode(bufnr, node)
-  local startLine, startCol, _, endCol = node:range() -- range of the capture
+---Get or create new highlight group
+---@param bufnr integer
+---@param startLine integer
+---@param startCol integer
+---@return string # Highlight group name
+function hidesig.getOrCreateHighlightGroup(bufnr, startLine, startCol)
+
   local highlightGroup = highlight_utils.getHightlightGroupForRange(bufnr, startLine, startCol)
+
+  if cachedHighlightGroup[highlightGroup] ~= nil then
+    return cachedHighlightGroup[highlightGroup]
+  end
+
   local color = highlight_utils.getHighlightGroupColor(highlightGroup)
   local darkenValue = hidesig.configs.opacity or 0.75
   local newHighlightGroup = string.format("%sDimmed", highlightGroup)
+
+  cachedHighlightGroup[highlightGroup] = newHighlightGroup
 
   vim.api.nvim_set_hl(
     hidesig.ns,
@@ -23,10 +33,20 @@ function hidesig.traverseNode(bufnr, node)
     }
   )
 
+  return newHighlightGroup
+end
+
+--- Traverse node to dim highlight color
+---@param bufnr integer Buffer number
+---@param node any Treesitter node
+function hidesig.traverseNode(bufnr, node)
+  local startLine, startCol, _, endCol = node:range() -- range of the capture
+  local highlightGroup = hidesig.getOrCreateHighlightGroup(bufnr, startLine, startCol)
+
   vim.api.nvim_buf_add_highlight(
     bufnr,
     hidesig.ns,
-    newHighlightGroup,
+    highlightGroup,
     startLine,
     startCol,
     endCol

@@ -29,6 +29,10 @@ require("nvim-treesitter.configs").setup {
 }
 ```
 
+# TODO
+- [ ] Dim sorbet sig on buffer changed
+- [x] Cache color calculation and highlight groups
+
 # Credits
 
 Thank you for inspiring me and set examples so I can understand nvim treesitter lua api.
