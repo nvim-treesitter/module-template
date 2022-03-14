@@ -12,8 +12,8 @@ function hidesig.traverseNode(bufnr, node)
   local color = highlight_utils.getHighlightGroupColor(highlightGroup)
   local darkenValue = hidesig.configs.opacity or 0.75
   local newHighlightGroup = string.format("%sDimmed", highlightGroup)
-  vim.notify("[traverse node] bufnr", bufnr)
-  vim.notify("[traverse node] node type", node:type())
+  print("[traverse node] bufnr", bufnr)
+  print("[traverse node] node type", node:type())
 
   vim.api.nvim_set_hl(
     hidesig.ns,
@@ -35,10 +35,10 @@ function hidesig.traverseNode(bufnr, node)
   )
 
   if node:child_count() < 1 then
-    vim.notify("node has no children")
+    print("node has no children")
     return
   else
-    vim.notify("node children")
+    print("node has children")
     for childNode in node:iter_children() do
       hidesig.traverseNode(bufnr, childNode)
     end
@@ -49,8 +49,9 @@ end
 ---@param configs table configuration for hidesig
 -- @param configs.opacity float value from 0.0 to 1.0
 function hidesig.setup(configs)
-  vim.notify("[hidesig] setting up")
+  print("[hidesig] setting up")
   hidesig.ns = vim.api.nvim_create_namespace("hidesig_ns")
+  vim.api.nvim__set_hl_ns(hidesig.ns)
   hidesig.configs = configs or {}
 end
 
@@ -85,11 +86,12 @@ function hidesig.perform(bufnr, lang)
   for _, captures in parsedQuery:iter_matches(bufferRoot, bufnr) do
     local sigBlock = captures[2] -- capture @sig_def
     count = count + 1
-    -- for rootChildNode in sigBlock:iter_children() do
-      -- hidesig.traverseNode(bufnr, rootChildNode)
-    -- end
+    print("[hidesig] sigBlock", sigBlock:type())
+    for rootChildNode in sigBlock:iter_children() do
+      hidesig.traverseNode(bufnr, rootChildNode)
+    end
   end
-  vim.notify(count)
+  print(count)
 end
 
 return hidesig

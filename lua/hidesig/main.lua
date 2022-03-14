@@ -5,7 +5,7 @@ local M = {}
 
 function M.attach(bufnr, lang)
   local config = configs.get_module("hidesig")
-  print("[hidesig] Attaching to bufnr", bufnr)
+  print("[hidesig] attaching to", bufnr, "for lang", lang)
   hidesig.setup(config)
   hidesig.perform(bufnr, lang)
 end
