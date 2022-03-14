@@ -1,4 +1,4 @@
-local hidesig = require("nvim-hidesig/hidesig")
+local hidesig = require("nvim-hidesig.hidesig")
 local configs = require("nvim-treesitter.configs")
 
 local M = {}

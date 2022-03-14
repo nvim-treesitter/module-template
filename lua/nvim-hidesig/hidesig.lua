@@ -1,5 +1,5 @@
-local highlight_utils = require("nvim-hidesig/highlight_utils")
-local util = require("nvim-hidesig/util")
+local highlight_utils = require("nvim-hidesig.highlight_utils")
+local util = require("nvim-hidesig.util")
 
 local hidesig = {}
 
