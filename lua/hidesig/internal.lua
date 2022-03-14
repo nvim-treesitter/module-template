@@ -61,13 +61,67 @@ function hidesig.traverseNode(bufnr, node)
   end
 end
 
+---Highlight specific lines
+---@param bufnr integer # Buffer number
+---@param changes table # List of changes in format { startRow, startCol, endRow, endCol }
+---@param tree any # Syntax tree
+---@param lang string # Buffer language
+function hidesig.highlightLines(bufnr, changes, tree, lang)
+  -- check if there's a popup visible
+  if vim.fn.pumvisible() == 1 or not lang then
+    return
+  end
+
+  local rootNode = tree:root()
+  local query = [[
+    (
+      call
+        method: (identifier) @sig_keyword
+        block:  [(block) (do_block)]
+      (#eq? @sig_keyword "sig")
+    ) @sig_def
+  ]]
+  local parsedQuery = vim.treesitter.parse_query(lang, query)
+
+  for _, change in ipairs(changes) do
+    local startRow = change[1]
+    local endRow = change[3]
+
+    vim.api.nvim_buf_clear_namespace(bufnr, hidesig.ns, startRow, endRow)
+
+    for _, captures in parsedQuery:iter_matches(rootNode, bufnr, startRow, endRow) do
+      local sigBlock = captures[2] -- capture @sig_def
+
+      if sigBlock ~= nil and not sigBlock:has_error() then
+        for rootChildNode in sigBlock:iter_children() do
+          hidesig.traverseNode(bufnr, rootChildNode)
+        end
+      end
+    end
+  end
+end
+
 --- Setup hidesig module with config options, must be called before perform
 ---@param configs table configuration for hidesig
 -- @param configs.opacity float value from 0.0 to 1.0
-function hidesig.setup(configs)
+function hidesig.setup(bufnr, configs)
   hidesig.ns = vim.api.nvim_create_namespace("hidesig_ns")
   vim.api.nvim__set_hl_ns(hidesig.ns)
   hidesig.configs = configs or {}
+  hidesig.enabledBuffers = {}
+  hidesig.enabledBuffers[bufnr] = true
+end
+
+--- Teardown state and clear namespace for buffer
+---@param bufnr integer # Buffer number
+function hidesig.teardown(bufnr)
+  if hidesig.ns == nil then
+    error("[hidesig.lua] Must call setup() before teardown()")
+    return
+  end
+
+  hidesig.enabledBuffers[bufnr] = nil
+  vim.api.nvim_buf_clear_namespace(bufnr, hidesig.ns, 0, -1)
 end
 
 --- Perform hidesig highlighting logic for Ruby sorbet signature definition
@@ -79,31 +133,11 @@ function hidesig.perform(bufnr, lang)
     return
   end
 
-  local languageTree = vim.treesitter.get_parser(bufnr, lang)
-  local syntaxTree = languageTree:parse()
-  local bufferRoot = syntaxTree[1]:root()
+  local parser = vim.treesitter.get_parser(bufnr, lang)
+  local syntaxTree = parser:parse()[1]
 
-  local query = [[
-    (
-      call
-        method: (identifier) @sig_keyword
-        block:  [(block) (do_block)]
-      (#eq? @sig_keyword "sig")
-    ) @sig_def
-  ]]
-
-  local parsedQuery = vim.treesitter.parse_query(lang, query)
-
-  -- TODO: May need to clear highlight before adding running highlight. Otherwise commented code may retain the highlight
-  -- reference https://github.dev/p00f/nvim-ts-rainbow/blob/master/lua/rainbow/internal.lua:51
-  vim.api.nvim_buf_clear_namespace(bufnr, hidesig.ns, 0, -1)
-
-  for _, captures in parsedQuery:iter_matches(bufferRoot, bufnr) do
-    local sigBlock = captures[2] -- capture @sig_def
-    for rootChildNode in sigBlock:iter_children() do
-      hidesig.traverseNode(bufnr, rootChildNode)
-    end
-  end
+  -- highlight the entire buffer
+  hidesig.highlightLines(bufnr, { { syntaxTree:root():range() } }, syntaxTree, lang)
 end
 
 return hidesig
