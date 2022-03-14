@@ -4,10 +4,10 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 local highlight_utils = {}
 
 --- Get tree-sitter highlight groups for a buffer
--- @params bufnr The buffer number
--- @params row Line number
--- @params col Column number
--- @return array of matched highlight groups used for specified range. E.g {"TSFunction", "TSVariable"}
+---@params bufnr integer The buffer number
+---@params row integer Line number
+---@params col integer Column number
+---@return table array of matched highlight groups used for specified range. E.g {"TSFunction", "TSVariable"}
 function highlight_utils.get_treesitter_hl(bufnr, row, col)
   local rubyHighlighter = highlighter.active[bufnr]
   if not rubyHighlighter then
@@ -52,11 +52,11 @@ function highlight_utils.get_treesitter_hl(bufnr, row, col)
   return matches
 end
 
---- Get highest priorty tree-sitter highlight group used for a range in a buffer
--- @params bufnr The buffer number
--- @params row Line number
--- @params col Column number
--- @return Name of highlight group used in type string. E.g. "TSFunction"
+---Get highest priorty tree-sitter highlight group used for a range in a buffer
+---@params bufnr integer The buffer number
+---@params row integer Line number
+---@params col integer Column number
+---@return string Name of highlight group used in type string. E.g. "TSFunction"
 function highlight_utils.getHightlightGroupForRange(bufnr, row, col)
   local ts_hi = highlight_utils.get_treesitter_hl(bufnr, row, col)
   local final = #ts_hi >= 1 and ts_hi[#ts_hi]
@@ -69,8 +69,8 @@ function highlight_utils.getHightlightGroupForRange(bufnr, row, col)
 end
 
 --- Get color used by (n)vim for a highlight group
--- @params hlGroup Name of the highlight group
--- @return hex string representation of color. E.g "#7aa2f7"
+---@params hlGroup string Name of the highlight group
+---@return string hex string representation of color. E.g "#7aa2f7"
 function highlight_utils.getHighlightGroupColor(hlGroup)
   local hl = vim.api.nvim_get_hl_by_name(hlGroup, true)
   local color = string.format("#%x", hl["foreground"] or 0)
