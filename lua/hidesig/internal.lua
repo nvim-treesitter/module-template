@@ -67,7 +67,8 @@ function hidesig.highlightLines(bufnr, range, tree, lang)
   end
 
   local rootNode = tree:root()
-  local parsedQuery = ts_query.get_query(lang, "hidesig")
+  local parsedQuery = ts_query.get_query(lang, "sig_def")
+
   local startRow = range[1]
   local endRow = range[2]
 

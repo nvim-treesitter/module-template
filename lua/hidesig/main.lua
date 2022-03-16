@@ -9,7 +9,7 @@ local cmdEvents = {
 
 local M = {}
 
-local function partialUpdateCmd(event, bufnr, lang, opacity)
+function M.partialUpdateCmd(event, bufnr, lang, opacity)
   return string.format(
     [[autocmd %s <buffer=%d> lua require('hidesig.internal').updateVisibleBuf(%d, '%s', %0.2f)]],
     event,
@@ -28,7 +28,7 @@ function M.attach(bufnr, lang)
   cmd(string.format("augroup NvimHidesig_%d", bufnr))
   cmd("au!")
   for _, event in ipairs(cmdEvents) do
-    cmd(partialUpdateCmd(
+    cmd(M.partialUpdateCmd(
       event,
       bufnr,
       lang,
