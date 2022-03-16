@@ -49,4 +49,5 @@ Thank you for inspiring me and set examples so I can understand nvim treesitter 
 - [folke/tokyonight.nvim](https://github.com/folke/tokyonight.nvim)
 - [p00f/nvim-ts-rainbow](https://github.dev/p00f/nvim-ts-rainbow)
 - [NarutoXY/dim.lua](https://github.com/NarutoXY/dim.lua)
+- [nvim-treesitter/nvim-treesitter-refactor](https://github.com/nvim-treesitter/nvim-treesitter-refactor)
 - @theHamsta
