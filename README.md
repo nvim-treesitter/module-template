@@ -1,6 +1,9 @@
-# Nvim Hide Sig
+# Nvim Hidesig
+  
+<a href="https://nvim-treesitter.zulipchat.com/">
+  <img alt="Zulip Chat" src="https://img.shields.io/badge/zulip-join_chat-brightgreen.svg" />
+</a>
 
-[![Gitter](https://badges.gitter.im/nvim-treesitter/community.svg)](https://gitter.im/nvim-treesitter/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 Dim Sorbet signature definitions so you can focus on the code.
 
