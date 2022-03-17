@@ -2,6 +2,9 @@ local hidesig = require("hidesig.internal")
 local ts_configs = require("nvim-treesitter.configs")
 local cmd = vim.api.nvim_command
 
+local DEFAULT_OPACITY      = 0.75
+local DEFAULT_UPDATE_DELAY = 200
+
 local cmdEvents = {
   "InsertLeave",
   "CursorMoved",
@@ -9,20 +12,23 @@ local cmdEvents = {
 
 local M = {}
 
-function M.partialUpdateCmd(event, bufnr, lang, opacity)
+function M.partialUpdateCmd(event, bufnr, lang, opacity, delay)
   return string.format(
-    [[autocmd %s <buffer=%d> lua require('hidesig.internal').updateVisibleBuf(%d, '%s', %0.2f)]],
+    [[autocmd %s <buffer=%d> lua require('hidesig.internal').updateVisibleBufDebounced(%d, '%s', %0.2f, %d)]],
     event,
     bufnr,
     bufnr,
     lang,
-    opacity
+    opacity,
+    delay
   )
 end
 
 function M.attach(bufnr, lang)
-  local config = ts_configs.get_module("hidesig")
-  local opacity = config.opacity
+  local config  = ts_configs.get_module("hidesig")
+  local opacity = config.opacity or DEFAULT_OPACITY
+  local delay   = config.delay or DEFAULT_UPDATE_DELAY
+
   hidesig.fullUpdate(bufnr, lang, opacity)
 
   cmd(string.format("augroup NvimHidesig_%d", bufnr))
@@ -32,7 +38,8 @@ function M.attach(bufnr, lang)
       event,
       bufnr,
       lang,
-      opacity
+      opacity,
+      delay
     ))
   end
   cmd("augroup END")

@@ -8,11 +8,11 @@ local cachedHighlightGroup = {}
 local namespace = vim.api.nvim_create_namespace("hidesig_ns")
 
 ---Get or create new highlight group
----@param bufnr integer
----@param startLine integer
----@param startCol integer
----@return string # Highlight group name
-function hidesig.getOrCreateHighlightGroup(bufnr, startLine, startCol)
+---@param bufnr integer     # Buffer number
+---@param startLine integer # Start line
+---@param startCol integer  # Start col
+---@param opacity number    # Color opacity value from 0.0 to 1.0
+function hidesig.getOrCreateHighlightGroup(bufnr, startLine, startCol, opacity)
   local highlightGroup = highlight_utils.getHightlightGroupForRange(bufnr, startLine, startCol)
 
   if cachedHighlightGroup[highlightGroup] ~= nil then
@@ -20,8 +20,7 @@ function hidesig.getOrCreateHighlightGroup(bufnr, startLine, startCol)
   end
 
   local color = highlight_utils.getHighlightGroupColor(highlightGroup)
-  local darkenValue = hidesig.opacity or 0.75
-  local newHighlightGroup = string.format("%sDimmed", highlightGroup)
+  local newHighlightGroup = string.format("%sHidesig", highlightGroup)
 
   cachedHighlightGroup[highlightGroup] = newHighlightGroup
 
@@ -29,7 +28,7 @@ function hidesig.getOrCreateHighlightGroup(bufnr, startLine, startCol)
     namespace,
     newHighlightGroup,
     {
-      fg = util.darken(color, darkenValue),
+      fg = util.darken(color, opacity),
       undercurl = false,
       underline = false,
     }
@@ -39,18 +38,19 @@ function hidesig.getOrCreateHighlightGroup(bufnr, startLine, startCol)
 end
 
 --- Traverse node to dim highlight color
----@param bufnr integer Buffer number
----@param node any Treesitter node
-function hidesig.traverseNode(bufnr, node)
+---@param bufnr integer  # Buffer number
+---@param node any       # Treesitter node
+---@param opacity number # Color opacity value from 0.0 to 1.0
+function hidesig.traverseNode(bufnr, node, opacity)
   local startLine, startCol, _, _ = node:range() -- range of the capture
-  local highlightGroup = hidesig.getOrCreateHighlightGroup(bufnr, startLine, startCol)
+  local highlightGroup = hidesig.getOrCreateHighlightGroup(bufnr, startLine, startCol, opacity)
 
-  ts_utils.highlight_node(node, bufnr, namespace, highlightGroup)
+  ts_utils.highlight_node(node, bufnr, namespace, highlightGroup, opacity)
   if node:child_count() < 1 then
     return
   else
     for childNode in node:iter_children() do
-      hidesig.traverseNode(bufnr, childNode)
+      hidesig.traverseNode(bufnr, childNode, opacity)
     end
   end
 end
@@ -60,7 +60,8 @@ end
 ---@param range table # List of changes in format { startRow, endRow }
 ---@param tree any # Syntax tree
 ---@param lang string # Buffer language
-function hidesig.highlightLines(bufnr, range, tree, lang)
+---@param opacity number # Color opacity value from 0.0 to 1.0
+function hidesig.highlightLines(bufnr, range, tree, lang, opacity)
   -- check if there's a popup visible
   if vim.fn.pumvisible() == 1 or not lang then
     return
@@ -79,7 +80,7 @@ function hidesig.highlightLines(bufnr, range, tree, lang)
 
     if sigBlock ~= nil and not sigBlock:has_error() then
       for rootChildNode in sigBlock:iter_children() do
-        hidesig.traverseNode(bufnr, rootChildNode)
+        hidesig.traverseNode(bufnr, rootChildNode, opacity)
       end
     end
   end
@@ -92,11 +93,10 @@ function hidesig.teardown(bufnr)
 end
 
 --- Perform hidesig highlighting logic for Ruby sorbet signature definition for entire buf
---- @param bufnr integer # Buffer number
---- @param lang string # Language name
+--- @param bufnr integer  # Buffer number
+--- @param lang string    # Language name
 --- @param opacity number # Number from 0.0 to 1.0
 function hidesig.fullUpdate(bufnr, lang, opacity)
-  hidesig.opacity = opacity
   vim.api.nvim__set_hl_ns(namespace)
 
   local parser = vim.treesitter.get_parser(bufnr, lang)
@@ -108,16 +108,16 @@ function hidesig.fullUpdate(bufnr, lang, opacity)
     bufnr,
     { treeRange[1], treeRange[3] },
     syntaxTree,
-    lang
+    lang,
+    opacity
   )
 end
 
 --- Perform hidesig highlighting logic for Ruby sorbet signature definition for visible part of buf
---- @param bufnr integer # Buffer number
---- @param lang string # Language name
+--- @param bufnr integer  # Buffer number
+--- @param lang string    # Language name
 --- @param opacity number # Number from 0.0 to 1.0
 function hidesig.updateVisibleBuf(bufnr, lang, opacity)
-  hidesig.opacity = opacity
   vim.api.nvim__set_hl_ns(namespace)
 
   local parser = vim.treesitter.get_parser(bufnr, lang)
@@ -129,8 +129,25 @@ function hidesig.updateVisibleBuf(bufnr, lang, opacity)
     bufnr,
     { startLine, endLine },
     syntaxTree,
-    lang
+    lang,
+    opacity
   )
+end
+
+--- Perform hidesig highlighting logic for Ruby sorbet signature definition for visible part of buf with debounced
+--- @param bufnr integer      # Buffer number
+--- @param lang string        # Language name
+--- @param opacity number     # Number from 0.0 to 1.0
+--- @param updateDelay number # Delay time before update in ms
+function hidesig.updateVisibleBufDebounced(bufnr, lang, opacity, updateDelay)
+  if hidesig.timer then
+    hidesig.timer:stop()
+    hidesig.timer = nil
+  end
+
+  hidesig.timer = vim.defer_fn(function()
+    hidesig.updateVisibleBuf(bufnr, lang, opacity)
+  end, updateDelay)
 end
 
 return hidesig
