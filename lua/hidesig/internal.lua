@@ -97,7 +97,7 @@ end
 --- @param lang string    # Language name
 --- @param opacity number # Number from 0.0 to 1.0
 function hidesig.fullUpdate(bufnr, lang, opacity)
-  vim.api.nvim__set_hl_ns(namespace)
+  hidesig.set_hl_ns(namespace)
 
   local parser = vim.treesitter.get_parser(bufnr, lang)
   local syntaxTree = parser:parse()[1]
@@ -118,7 +118,7 @@ end
 --- @param lang string    # Language name
 --- @param opacity number # Number from 0.0 to 1.0
 function hidesig.updateVisibleBuf(bufnr, lang, opacity)
-  vim.api.nvim__set_hl_ns(namespace)
+  hidesig.set_hl_ns(namespace)
 
   local parser = vim.treesitter.get_parser(bufnr, lang)
   local syntaxTree = parser:parse()[1]
@@ -132,6 +132,18 @@ function hidesig.updateVisibleBuf(bufnr, lang, opacity)
     lang,
     opacity
   )
+end
+
+--- Set highligh namespace using vim api
+--- @param namespace string
+function hidesig.set_hl_ns(namespace)
+  if vim.fn.has('nvim-0.8') == 1 then
+    -- New API change for 0.8 version
+    -- https://github.com/neovim/neovim/commit/d879331b0dee66cb106b5bea9efc2f920caf9abd
+    vim.api.nvim_set_hl_ns(namespace)
+  else
+    vim.api.nvim__set_hl_ns(namespace)
+  end
 end
 
 --- Perform hidesig highlighting logic for Ruby sorbet signature definition for visible part of buf with debounced
