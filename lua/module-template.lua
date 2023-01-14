@@ -1,3 +1,9 @@
+if not pcall(require, "nvim-treesitter") then
+  -- TODO: Replace `module-template` with the actual name of your module.
+  print "module-template requires nvim-treesitter to be installed"
+  return
+end
+
 local queries = require "nvim-treesitter.query"
 
 local M = {}
