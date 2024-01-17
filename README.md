@@ -1,3 +1,5 @@
+**Nvim-treesitter modules are deprecated and will be removed; new tree-sitter based plugins should be standalone.**
+
 # module-template
 A repository template to create you own nvim-treesitter module !
 
